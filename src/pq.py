@@ -7,6 +7,7 @@ from typing import (
     Any,
 )
 from dataclasses import dataclass
+from itertools import permutations
 
 # Defining what it means to be ordered and set up T
 # so we can use it to mean an ordered type
@@ -17,7 +18,7 @@ class Ordered(Protocol):
 
     def __lt__(self, other: Any) -> bool:
         """Is self less than other."""
-        ...
+        self < other
 
 
 T = TypeVar('T', bound=Ordered)
@@ -64,6 +65,12 @@ def rightmost(tree: Node[T]) -> T:
     """Get the rightmost value in a non-empty tree."""
     while tree.right:
         tree = tree.right
+    return tree.value
+
+def leftmost(tree: Node[T]) -> T:
+    """Get the leftmost value in a non-empty tree."""
+    while tree.left:
+        tree = tree.left
     return tree.value
 
 
@@ -158,19 +165,24 @@ class PriorityQueue(SearchTree[T]):
     def min_val(self) -> T:
         """Return the smallest value."""
         # FIXME
-        ...
+        return leftmost(self.root)
 
     def delete_min(self) -> T:
         # FIXME
         """Delete the smallest value (and return it)."""
-        ...
+        min_ = self.min_val
+        self.remove(min_)
+        return min_
 
 
 def pq_sort(x: Iterable[T]) -> Iterator[T]:
     """Sort x using a priority queue."""
     # FIXME
-    ...
-
+    sorted = []
+    prio = PriorityQueue(x)
+    while prio.root:
+        sorted.append(prio.delete_min())
+    return sorted
 
 # Merging
 def general_merge(
@@ -184,7 +196,9 @@ def general_merge(
     in the same running time.
     """
     # FIXME
-    ...
+    while x.root:
+        y.insert(x.delete_min())
+    return y
 
 
 def special_merge(
@@ -204,4 +218,21 @@ def special_merge(
     smallest_y = y.min_val
     assert largest_x < smallest_y
     # FIXME
-    ...
+    queue = x.root
+    while queue.right:
+        queue = queue.right
+    while y.root:
+        queue.right = Node(y.delete_min())
+        queue = queue.right
+    return x
+
+
+
+
+
+x = tuple(range(5))
+z = PriorityQueue(x)
+z.delete_min()
+print(z)
+# for y in permutations(x):
+#     print(tuple(pq_sort(y)))
